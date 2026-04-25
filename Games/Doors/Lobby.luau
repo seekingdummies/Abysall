@@ -22,6 +22,44 @@ local Services = setmetatable({}, {
     end
 })
 
+local Groupboxes = {}
+local Globals = {}
+local Connections = {}
+local Functions = {}
+
+local LocalPlayer = Services.Players.LocalPlayer
+local RemotesFolder = Services.ReplicatedStorage:WaitForChild("RemotesFolder")
+
+local Loading = Library:CreateLoading({
+    Title = "Abysall Hub",
+    Icon = 0,
+    TotalSteps = 3
+})
+ 
+Loading:SetMessage("Initialising...")
+Loading:SetDescription("Waiting for game to load...")
+Loading:SetCurrentStep(1)
+
+task.spawn(function()
+    task.wait(0.5)
+    Loading:ShowSidebarPage(true)
+    Loading.Sidebar:AddLabel("-- Developers --")
+    Loading.Sidebar:AddLabel("<font color='rgb(255, 230, 0)'>bocaj111004</font>")
+    Loading.Sidebar:AddLabel("<font color='rgb(255, 230, 0)'>feargeorge</font>")
+    Loading.Sidebar:AddLabel("<font color='rgb(255, 230, 0)'>thehuntersolo1</font>")
+    Loading.Sidebar:AddLabel("-- Community --")
+    Loading.Sidebar:AddLabel("<font color='rgb(0, 217, 255)'>https://discord.gg/q6pFJRSy9e</font>")
+end)
+
+while not LocalPlayer.Character do
+    task.wait()
+end
+task.wait(1)
+ 
+Loading:SetCurrentStep(2)
+Loading:SetDescription("Loading interface...")
+task.wait(1)
+
 local Window = Library:CreateWindow({
     Title = "Abysall Hub",
     Footer = "Abysall Hub - Beta | Doors (Lobby)",
@@ -34,17 +72,10 @@ local Window = Library:CreateWindow({
     CornerRadius = 2,
 })
 
+Abysall.Interface.ApplyInfoTab(Window)
 local Tabs = {
     General = Window:AddTab("General", "house"),
 }
-
-local Groupboxes = {}
-local Globals = {}
-local Connections = {}
-local Functions = {}
-
-local LocalPlayer = Services.Players.LocalPlayer
-local RemotesFolder = Services.ReplicatedStorage:WaitForChild("RemotesFolder")
 
 Functions.CheckCompatability = function(Array)
     local Valid = true
@@ -191,7 +222,7 @@ Functions.CheckElevators = function()
 	if not Toggles.AutoJoinElevator.Value then
 		return
 	end
-	local TargetCharacter = Options.AutoJoinElevatorTarget.Value and Options.AutoJoinElevatorTarget.Value.Character or Options.AutoJoinElevatorTarget.Value and Services.Players:FindFirstChild(Options.AutoJoinElevatorTarget.Value) and Services.Players:FindFirstChild(Options.AutoJoinElevatorTarget.Value).Character
+	local TargetCharacter = Options.AutoJoinElevatorTarget.Value and Options.AutoJoinElevatorTarget.Value.Character
 	for Index, Elevator in pairs(Services.Workspace.Lobby.LobbyElevators:GetChildren()) do
 		if TargetCharacter and Elevator and TargetCharacter:GetAttribute("InGameElevator") and Elevator:GetAttribute("ID") and Elevator:GetAttribute("ID") == TargetCharacter:GetAttribute("InGameElevator") then
 			TargetFound = true
@@ -329,4 +360,9 @@ Library:OnUnload(function()
 end)
 
 task.wait(0.5)
+Loading:SetCurrentStep(3)
+Loading:SetDescription("Ready!")
+
+task.wait(1)
+Loading:Continue()
 Functions.Notify({Title = "Successfully loaded in " .. math.floor((tick() - LoadStart) * 1000) / 1000 .. " seconds."})
