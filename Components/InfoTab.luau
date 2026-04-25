@@ -4,7 +4,9 @@ return function(Window)
         "[ DOORS ]",
         "<font color='rgb(0, 255, 0)'>+ Added Loading Screen</font>",
         "<font color='rgb(0, 255, 0)'>+ Added Info Tab</font>",
-        "<font color='rgb(0, 255, 0)'>+ Fixed Several Bugs</font>"
+		"<font color='rgb(0, 255, 0)'>+ Added Remove Footstep Sounds</font>",
+        "<font color='rgb(0, 255, 0)'>+ Fixed Several Bugs</font>",
+		"<font color='rgb(0, 255, 0)'>+ Fixed Unloading</font>"
     }
 
     local function CloneReference(Object)
