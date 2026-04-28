@@ -4,7 +4,7 @@ return function(Window)
         "[ DOORS ]",
         "<font color='rgb(0, 255, 0)'>+ Fixed Loading on Xeno</font>",
         "<font color='rgb(0, 255, 0)'>+ Added Text Transparency Slider</font>",
-		"<font color='rgb(0, 255, 0)'>+ Added Text Outlne Transparency Slider</font>",
+		"<font color='rgb(0, 255, 0)'>+ Added Text Outline Transparency Slider</font>",
 		"<font color='rgb(0, 255, 0)'>+ Added Dropdown to Change Notification Style</font>",
         "<font color='rgb(0, 255, 0)'>+ Improved Unloading</font>",
     }
