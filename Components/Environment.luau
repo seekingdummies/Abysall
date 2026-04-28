@@ -59,6 +59,7 @@ Environment.PrintResults = function()
 end
 
 local function RunTest(Name, Test, InternalName)
+    print("testing: " .. Name)
     local TimedOut = false
     Tested = Tested + 1
 
@@ -175,9 +176,11 @@ end)
 
 RunTest("identifyexecutor", function()
     assert(typeof(Global.identifyexecutor()) == "string", "Did not return a string")
-    end)
+end)
 
-    RunTest("setfpscap", function()
+RunTest("setfpscap", function()
+    task.wait(0.25)
+
     local Start = tick()
     Global.setfpscap(6)
     task.wait(0.25)
@@ -647,7 +650,7 @@ RunTest("setthreadidentity", function()
 
     local Old = Global.getthreadidentity()
     Global.setthreadidentity(2)
-    assert(Services.CoreGui == nil, "Failed to set thread identity")
+    assert(Services.CoreGui == nil, "Capabilities do not match set identity")
     Global.setthreadidentity(Old)
 end)
 
