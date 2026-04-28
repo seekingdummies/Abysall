@@ -58,72 +58,57 @@ Environment.PrintResults = function()
     print("Test score: " .. math.round((Passed / Tested) * 100) .. "%")
 end
 
-if Global.isfile and Global.readfile and Global.identifyexecutor then
-    local Name, Version = Global.identifyexecutor()
-    if Version then
-       local Path = "Abysall/Tests/TestResult_" .. Name .. "_" .. Version .. ".json"
-        if Global.isfile(Path) then
-            local Data = Services.HttpService:JSONDecode(Global.readfile(Path))
-            for Index, Value in pairs(Data) do
-                AddResult(Index, Value.Reason)
-                if Value.Passed == true then
-                    Environment[Index] = Global[Index]
+local function RunTest(Name, Test, InternalName)
+    task.spawn(function()
+        local TimedOut = false
+        Tested = Tested + 1
+
+        local ExecutorName = Global.identifyexecutor and Global.identifyexecutor() or "Unknown"
+        if BrokenFeatures[ExecutorName] and table.find(BrokenFeatures[ExecutorName], Name) then
+            AddResult(Name, "❌ " .. Name .. " failed: test has been skipped")
+            Failed = Failed + 1
+            return
+        end
+
+        local NewGlobal = Global[Name]
+        if not NewGlobal then
+            AddResult(Name, "❌ " .. Name .. " failed: function is nil")
+            Failed = Failed + 1
+            return
+        end
+
+        local Time = 0
+        local Finished = false
+        task.spawn(function()
+            local Success, Result = pcall(Test, NewGlobal)
+            if not TimedOut then
+                if Success then
+                    if InternalName then
+                        Environment[InternalName] = NewGlobal
+                    else
+                        Environment[Name] = NewGlobal
+                    end
+                    AddResult(Name, "✅ " .. Name)
+                    Passed = Passed + 1
+                else
+                    AddResult(Name, "❌ " .. Name .. " failed: " .. Result)
+                    Failed = Failed + 1
                 end
             end
-            return Environment
-        end
-    end
-end
+            Finished = true
+        end)
 
-local function RunTest(Name, Test, InternalName)
-    local TimedOut = false
-    Tested = Tested + 1
-
-    local ExecutorName = Global.identifyexecutor and Global.identifyexecutor() or "Unknown"
-    if BrokenFeatures[ExecutorName] and table.find(BrokenFeatures[ExecutorName], Name) then
-        AddResult(Name, "❌ " .. Name .. " failed: test has been skipped")
-        Failed = Failed + 1
-        return
-    end
-
-    local NewGlobal = Global[Name]
-    if not NewGlobal then
-        AddResult(Name, "❌ " .. Name)
-        Failed = Failed + 1
-        return
-    end
-
-    local Time = 0
-    local Finished = false
-    task.spawn(function()
-    local Success, Result = pcall(Test, NewGlobal)
-    if not TimedOut then
-        if Success then
-            if InternalName then
-                Environment[InternalName] = NewGlobal
-            else
-                Environment[Name] = NewGlobal
-            end
-            AddResult(Name, "✅ " .. Name)
-            Passed = Passed + 1
-        else
-            AddResult(Name, "❌ " .. Name .. " failed: " .. Result)
+        while not Finished do
+            Time = Time + 1
+            if Time > 500 then
+            AddResult(Name, "❌ " .. Name .. " failed: test timed out")
             Failed = Failed + 1
+            TimedOut = true
+            break
+            end
+            task.wait()
         end
-    end
-    Finished = true
     end)
-
-    while not Finished do
-        Time = Time + 1
-        if Time > 500 then
-        AddResult(Name, "❌ " .. Name .. " failed: test timed out")
-        Failed = Failed + 1
-        TimedOut = true
-        break
-        end
-        task.wait()
-    end
 end
 
 --[[ Environment ]]
@@ -163,19 +148,8 @@ RunTest("getgc", function()
     local YesTables = Global.getgc(true)
     local NoTables = Global.getgc(false)
 
-    local FoundTable = false
-    local FoundFunction = false
-    for Index, Value in pairs(YesTables) do
-        if Value == TestTable then
-            FoundTable = true
-        end
-        if Value == TestFunction then
-            FoundFunction = true
-        end
-    end
-
-    assert(FoundTable == true, "Failed to find a table")
-    assert(FoundFunction == true, "Failed to find a function")
+    assert(table.find(YesTables, TestTable), "Failed to find a table")
+    assert(table.find(YesTables, TestFunction), "Failed to find a function")
 
     local FoundTable = false
     local FoundFunction = false
@@ -188,8 +162,8 @@ RunTest("getgc", function()
         end
     end
 
-    assert(FoundTable == false, "Found a table when called with false")
-    assert(FoundFunction == true, "Failed to find a function")
+    assert(not table.find(NoTables, TestTable), "Should not return a table when called with false")
+    assert(table.find(NoTables, TestFunction), "Failed to find a function")
 end)
 
 RunTest("filtergc", function()
@@ -365,9 +339,9 @@ RunTest("firetouchinterest", function()
     local Fired = false
 
     TestPart1.Touched:Connect(function(Child)
-    if Child == TestPart2 then
-        Fired = true
-    end
+        if Child == TestPart2 then
+            Fired = true
+        end
     end)
 
     Global.firetouchinterest(TestPart1, TestPart2, 0)
@@ -523,16 +497,16 @@ RunTest("hookmetamethod", function()
 
     local TestTable = setmetatable({}, {
         __index = Global.newcclosure(function()
-            return true
+            return "normal"
         end)
     })
 
     local Original
     Original = Global.hookmetamethod(TestTable, "__index", Global.newcclosure(function()
-        return false
+        return "hooked"
     end))
 
-    assert(TestTable.Example == false, "Failed to hook a metamethod")
+    assert(TestTable.Example == "hooked", "Failed to hook a metamethod")
 end)
 
 RunTest("getrawmetatable", function()
@@ -769,9 +743,9 @@ RunTest("getconnections", function()
     local Fired = false
 
     game.ChildAdded:Connect(function(Child)
-    if Child == "Example" then
-        Fired = true
-    end
+        if Child == "Example" then
+            Fired = true
+        end
     end)
 
     for Index, Connection in pairs(getconnections(game.ChildAdded)) do
@@ -999,12 +973,5 @@ RunTest("getsenv", function()
     end)
     assert(Result == "Example", "Did not return the script environment")
 end)
-
-if Environment.identifyexecutor and Environment.writefile then
-    local Name, Version = Environment.identifyexecutor()
-    if Version then
-        Environment.writefile("Abysall/Tests/TestResult_" .. Name .. "_" .. Version .. ".json", Services.HttpService:JSONEncode(Log))
-    end
-end
 
 return Environment
