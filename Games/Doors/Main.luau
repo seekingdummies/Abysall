@@ -2727,6 +2727,15 @@ Groupboxes.Visuals_ESP_Settings:AddSlider("ESPFadeTime", {
     Compact = true
 })
 
+Groupboxes.Visuals_ESP_Settings:AddSlider("ESPRenderLimit", {
+    Text = "Render Limit",
+    Min = 30,
+    Max = 240,
+    Default = 240,
+    Rounding = 0,
+    Compact = true
+})
+
 Groupboxes.Visuals_ESP_Settings:AddSlider("ESPTextSize", {
     Text = "Text Size",
     Min = 12,
@@ -2846,6 +2855,7 @@ Abysall.ESPLibrary:SetFillTransparency(0.75)
 Abysall.ESPLibrary:SetOutlineTransparency(0)
 Abysall.ESPLibrary:SetTextTransparency(0)
 Abysall.ESPLibrary:SetTextOutlineTransparency(0)
+Abysall.ESPLibrary:SetRenderLimit(240)
 Abysall.ESPLibrary:SetFadeTime(0.25)
 Abysall.ESPLibrary:SetTextSize(18)
 Abysall.ESPLibrary:SetFont(Enum.Font.RobotoCondensed)
@@ -2882,6 +2892,10 @@ end)
 
 Options.ESPFadeTime:OnChanged(function(Value)
     Abysall.ESPLibrary:SetFadeTime(Value)
+end)
+
+Options.ESPRenderLimit:OnChanged(function(Value)
+    Abysall.ESPLibrary:SetRenderLimit(Value)
 end)
 
 Options.ESPTextSize:OnChanged(function(Value)
@@ -3792,8 +3806,6 @@ Functions.HandleCharacter = function(NewCharacter)
     end
     table.insert(Globals.ThirdPersonParts, Character:WaitForChild("Head"))
 
-    local Previous = tick()
-    local NextDelay = math.random(2100, 2400) / 10000
     Connections.MainHandler = Services.RunService.RenderStepped:Connect(function()
         if Toggles.SpeedBoostToggle.Value then
             Humanoid.WalkSpeed = Functions.GetCurrentSpeed() + Options.SpeedBoostSlider.Value
@@ -3808,14 +3820,14 @@ Functions.HandleCharacter = function(NewCharacter)
             CollisionPartClone.Massless = true
         end
 
-        if tick() - Previous > NextDelay and Toggles.SpeedBoostToggle.Value and Options.SpeedBoostSlider.Value > 6 and Floor ~= "Fools" and Floor ~= "OldHotel" or tick() - Previous > NextDelay and Toggles.FlyToggle.Value and Options.FlySpeed.Value > 21 and Floor ~= "Fools" and Floor ~= "OldHotel" then
-            if CollisionPart.Anchored or Globals.Lagging or Toggles.VelocityManipulationToggle.Value then
-                CollisionPartClone.Massless = true
-            else
-                CollisionPartClone.Massless = not CollisionPartClone.Massless
+        if RemotesFolder:FindFirstChild("Crouch") and Toggles.SpeedBoostToggle.Value and Options.SpeedBoostSlider.Value > 6 and Floor ~= "Fools" and Floor ~= "OldHotel" or RemotesFolder:FindFirstChild("Crouch") and Toggles.FlyToggle.Value and Options.FlySpeed.Value > 21 and Floor ~= "Fools" and Floor ~= "OldHotel" then
+           local IsCrouching = Functions.IsCrouching()
+
+            if Toggles.CrouchSpoof.Value or Toggles.PositionSpoof.Value then
+                IsCrouching = true
             end
-            Previous = tick()
-            NextDelay = math.random(2100, 2400) / 10000
+           
+            RemotesFolder.Crouch:FireServer(IsCrouching, true)
         end
 
         if Services.Workspace:FindFirstChild("Eyes") or Services.Workspace:FindFirstChild("Lookman") then
