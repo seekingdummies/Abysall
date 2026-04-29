@@ -2,8 +2,10 @@ return function(Window)
     local LatestChangelog = {
         "29/04/2026",
         "[ DOORS ]",
-		"<font color='rgb(0, 255, 0)'>+ Added Render Limit Slider</font>",
-        "<font color='rgb(0, 255, 0)'>+ Improved Speed Bypass</font>",
+		"<font color='rgb(0, 255, 0)'>+ Added Keep On Teleport</font>",
+        "<font color='rgb(0, 255, 0)'>+ Added UI Style Dropdown</font>",
+		"<font color='rgb(0, 255, 0)'>+ Fixed Several Bugs</font>",
+		"<font color='rgb(255, 0, 0)'>- Removed Loading Screen (for Linoria UI Compatability)</font>",
     }
 
     local function CloneReference(Object)
