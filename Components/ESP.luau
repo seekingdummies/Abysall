@@ -348,7 +348,7 @@ function Library:AddESP(Parameters)
 			end
 		end
 		local Last = tick()
-		local Connection = RunService.RenderStepped:Connect(function()
+		local Connection = RunService.PreRender:Connect(function()
 			if tick() - Last > 1 / Library.RenderLimit then
 				Render()
 				Last = tick()
