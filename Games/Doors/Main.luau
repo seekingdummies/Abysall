@@ -1629,7 +1629,7 @@ end)
 
 Toggles.RemoveA90:OnChanged(function(Value)
     if not Functions.CheckCompatability({"hookfunction"}) then
-        Modules.Screech.Name = (Value and "A90_Disabled" or "A90")
+        Modules.A90.Name = (Value and "A90_Disabled" or "A90")
     end
 end)
 
