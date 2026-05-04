@@ -3409,6 +3409,7 @@ Functions.HandleCharacter = function(NewCharacter)
             end
         end
     end)
+    Globals.AnticheatDisabled = false
 
     local UIModules = Globals.MainUI.Initiator.Main_Game.RemoteListener.Modules
     Modules.A90 = UIModules:FindFirstChild("A90")
