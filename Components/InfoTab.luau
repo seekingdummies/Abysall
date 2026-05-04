@@ -44,7 +44,7 @@ return function(Window)
         Image = Content
     })
 
-    User:AddLabel("ID: " .. LocalPlayer.Name, true)
+    User:AddLabel("ID: " .. Abysall.ClientID, true)
     User:AddLabel("Total Executions: " .. (Abysall.TotalExecutions and Abysall.TotalExecutions or "N/A"), true)
 
     local Changelog = InfoTab:AddRightGroupbox("Changelog")
