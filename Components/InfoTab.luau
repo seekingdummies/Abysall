@@ -1,12 +1,14 @@
 return function(Window)
     local LatestChangelog = {
-        "29/04/2026",
+        "04/5/2026",
         "[ DOORS ]",
-		"<font color='rgb(0, 255, 0)'>+ Added Keep On Teleport</font>",
-        "<font color='rgb(0, 255, 0)'>+ Added UI Style Dropdown</font>",
-		"<font color='rgb(0, 255, 0)'>+ Fixed Several Bugs</font>",
-		"<font color='rgb(0, 255, 0)'>+ Fixed Speed Bypass on Xeno</font>",
-		"<font color='rgb(255, 0, 0)'>- Removed Loading Screen (for Linoria UI Compatability)</font>",
+		"<font color='rgb(0, 255, 0)'>+ Added Guess Library Code</font>",
+		"<font color='rgb(0, 255, 0)'>+ Renamed 'Rooms Auto-Walk' to 'Auto Rooms'</font>",
+        "<font color='rgb(0, 255, 0)'>+ Added Ignore A-60 (Auto Rooms)n</font>",
+		"<font color='rgb(0, 255, 0)'>+ Fixed Several Removal Toggles (Screech, A-90 etc)</font>",
+		"<font color='rgb(0, 255, 0)'>+ Fixed Speed Bypass Removing Footstep Sounds</font>",
+		"<font color='rgb(0, 255, 0)'>+ Other Small Changes</font>",
+		"<font color='rgb(255, 0, 0)'>- Removed Keep On Teleport (too buggy)</font>",
     }
 
     local function CloneReference(Object)
