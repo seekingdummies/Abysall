@@ -1466,7 +1466,6 @@ Toggles.PositionSpoof:OnChanged(function(Value)
             RootPart.CFrame = RootPart.CFrame * CFrame.new(0, 2.146, 0)
             Humanoid.HipHeight = 2.396
         end
-        Character.LowerTorso.Root.C1 = Character.LowerTorso.Root.C1 * CFrame.new(0, Toggles.PositionSpoof.Value and -2.146 or 2.146, 0)
     end
 end)
 
@@ -3646,6 +3645,7 @@ Functions.HandleCharacter = function(NewCharacter)
     table.insert(Globals.ThirdPersonParts, Character:WaitForChild("Head"))
 
     Globals.LastAnimationCheck = tick() 
+    Globals.OriginalC1 = Character.LowerTorso.Root.C1
     Connections.MainHandler = Services.RunService.RenderStepped:Connect(function()
         if Toggles.SpeedBoostToggle.Value then
             Humanoid.WalkSpeed = Functions.GetCurrentSpeed() + Options.SpeedBoostSlider.Value
@@ -3716,6 +3716,10 @@ Functions.HandleCharacter = function(NewCharacter)
                 CollisionClone.CollisionCrouch.CanCollide = not (Toggles.NoclipToggle.Value and true or Toggles.VelocityManipulationToggle.Value or Functions.IsCrouching() == false and true or false)
             else
                 RootPart.CanCollide = not (Toggles.NoclipToggle.Value and true or Toggles.VelocityManipulationToggle.Value or false)
+            end
+
+            if Character:FindFirstChild("LowerTorso") and Character.LowerTorso:FindFirstChild("Root") then
+                Character.LowerTorso.Root.C1 = Globals.OriginalC1 * CFrame.new(0, Toggles.PositionSpoof.Value and -2.146 or 0, 0)
             end
 
             Collision.Position = RootPart.Position + Vector3.new(0, Toggles.PositionSpoof.Value and 2.128 or 0.18, 0)
@@ -3821,7 +3825,6 @@ Functions.HandleCharacter = function(NewCharacter)
     task.wait(1)
     if Toggles.PositionSpoof.Value and Floor ~= "Fools" and Floor ~= "OldHotel" then
         RootPart.CFrame = RootPart.CFrame * CFrame.new(0, -2.146, 0)
-        Character.LowerTorso.Root.C1 = Character.LowerTorso.Root.C1 * CFrame.new(0, -2.146, 0)
         Humanoid.HipHeight = 0.25
         RemotesFolder.Crouch:FireServer(true)
     end
