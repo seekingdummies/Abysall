@@ -141,6 +141,9 @@ function Library:AddESP(Parameters)
 	if not Object:IsA("BasePart") and not Object:IsA("Model") then
 		return
 	end
+	if not ConnectionsTable[Object] then
+		ConnectionsTable[Object] = {}
+	end
 	Library.TransparencyEnabled[Object] = false
 	if Highlights[Object] then
 		Highlights[Object]:Destroy()
@@ -346,7 +349,7 @@ function Library:AddESP(Parameters)
 				Last = tick()
 			end
 		end)
-		ConnectionsTable[Object] = Connection
+		table.insert(ConnectionsTable[Object], Connection) 
 	end)
 end
 
@@ -524,7 +527,9 @@ function Library:RemoveESP(Object)
 				ArrowsTable[Object] = nil
 			end
 			if ConnectionsTable[Object] then
-				ConnectionsTable[Object]:Disconnect()
+				for Index, Connection in pairs(ConnectionsTable[Object]) do
+					Connection:Disconnect()
+				end
 			end
 			if Library.Lines[Object] ~= nil then
 				if Library.Lines[Object][1] ~= nil  then
@@ -556,7 +561,9 @@ function Library:RemoveESP(Object)
 				end
 				RemoveObjectFromTables(Object)
 				if ConnectionsTable[Object] then
-					ConnectionsTable[Object]:Disconnect()
+					for Index, Connection in pairs(ConnectionsTable[Object]) do
+						Connection:Disconnect()
+					end
 				end
 				if ArrowsTable[Object] then
 					ArrowsTable[Object]:Destroy()
