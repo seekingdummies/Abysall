@@ -2252,7 +2252,7 @@ Toggles.PlayerESPToggle:OnChanged(function(Value)
     task.wait()
     for Index, Object in (Services.Players:GetPlayers()) do
         if Object.Character and Object ~= LocalPlayer then
-            if Value then
+            if Value and Object:GetAttribute("Alive") == true then
                 Functions.AddESP({
                     Object = Object.Character,
                     Text = Object.Name,
@@ -2917,8 +2917,11 @@ Functions.RoomsAutoWalk.GetNearestHidingSpot = function()
         if Object.PrimaryPart and Object:FindFirstChild("HidePrompt") then
             local Distance = LocalPlayer:DistanceFromCharacter(Object.PrimaryPart.Position)
             if Distance < Nearest.Distance then
-                Nearest.Distance = Distance
-                Nearest.Object = Object
+                local HiddenPlayer = Object:FindFirstChild("HiddenPlayer", true)
+                if HiddenPlayer and not HiddenPlayer.Value then
+                    Nearest.Distance = Distance
+                    Nearest.Object = Object
+                end
             end
         end
     end
@@ -3142,13 +3145,14 @@ Connections.RoomsHandler = CurrentRooms.ChildAdded:Connect(function(Room)
 
                 Path:ComputeAsync(RootPart.Position, Room.RoomExit.Position)
                 if Path.Status == Enum.PathStatus.Success then
+                    Room:SetAttribute("PathFound", true)
                     for Index, Object in (Path:GetWaypoints()) do
                         CreateNode(Object)
+                        task.wait()
                     end
-                    Room:SetAttribute("PathFound", true)
                 end
             end
-            task.wait(0.1)
+            task.wait(0.25)
         end
     end
 end)
@@ -3982,7 +3986,8 @@ Globals.AllowedInstances = {
     ["RunnerNodes"] = true,
     ["PathLights"] = true,
     ["DuckBoard"] = true,
-    ["Padlock"] = true
+    ["Padlock"] = true,
+    ["EyestalkEndCutscene"] = true
 }
 
 Functions.HandleObject = function(Object)
@@ -3992,9 +3997,9 @@ Functions.HandleObject = function(Object)
 
     if Object.Name ~= "TriggerEventCollision" then
         if Object.ClassName == "ProximityPrompt" then
-            task.wait(math.random(5, 10) / 100)
+            task.wait(math.random(15, 20) / 100)
         else
-            task.wait(math.random(10, 30) / 100)
+            task.wait(math.random(20, 40) / 100)
         end
     end
 
@@ -4326,6 +4331,11 @@ Functions.HandleObject = function(Object)
     elseif Object.Name == "PathLights" then
        local function CreateHighlight(Object2)
             if Object2.Name == "SeekGuidingLight" then
+                if Object2:GetAttribute("Highlighted") then
+                    return
+                end
+                Object2:SetAttribute("Highlighted", true)
+
                 local NewNode = Instance.new("Part")
                 NewNode.Size = Vector3.new(1,1,1)
                 NewNode.Transparency = 1
@@ -4372,12 +4382,24 @@ Functions.HandleObject = function(Object)
                 table.insert(Objects.SeekHighlights, NewBeam)
             end
         end
+
+        local ObjectsToHighlight = {}
+        local Connection = Object.ChildAdded:Connect(function(Object2)
+            table.insert(ObjectsToHighlight, Object2)
+        end)
+
         for Index2, Object2 in (Object:GetChildren()) do
-            CreateHighlight(Object2)
+            table.insert(ObjectsToHighlight, Object2)
         end
 
-        local Connection = Object.ChildAdded:Connect(function(Object2)
-            CreateHighlight(Object2)
+        task.spawn(function()
+            while task.wait() do
+                local HighlightPart = ObjectsToHighlight[1]
+                if HighlightPart then
+                    CreateHighlight(HighlightPart)
+                    table.remove(ObjectsToHighlight, 1)
+                end
+            end
         end)
 
         table.insert(Connections, Connection)
@@ -4398,6 +4420,7 @@ Functions.HandleObject = function(Object)
                 NewBridge.Material = Enum.Material.ForceField
 				table.insert(Objects.SeekBridges, NewBridge)
 			end
+            task.wait()
         end
     elseif Object.Name == "RunnerNodes" then
         local function IsBehind(Part1, Part2)
@@ -4431,6 +4454,7 @@ Functions.HandleObject = function(Object)
             if NodeID and Object:FindFirstChild("MinecartNode" .. NodeID - 1) and Object:FindFirstChild("MinecartNode" .. NodeID - 1):GetAttribute("ForceConnect") then
                 NewNode:SetAttribute("DistanceBlacklist", nil)
             end
+            task.wait()
 		end
 
         local function GetClosestNode(Node)
@@ -4458,7 +4482,10 @@ Functions.HandleObject = function(Object)
                     table.insert(Objects.SeekNodes, Node)
                 end
             end
+            task.wait()
         end
+    elseif Object.Name == "EyestalkEndCutscene" then
+        Object.Name = "_EyestalkEndCutscene"
     elseif Object.Name == "DuckBoard" then
         table.insert(Objects.SeekDuckBoards, Object)
     elseif Object.Name == "Wardrobe" or Object.Name == "Backdoor_Wardrobe" or Object.Name == "Toolshed" or Object.Name == "RetroWardrobe" then
@@ -5042,9 +5069,16 @@ for Index, Object in (Services.Players:GetPlayers()) do
                 Color = Options.PlayerESPColor.Value
             })
         end)
+        local DeadConnection = Object:GetAttributeChangedSignal("Alive"):Connect(function()
+            if Object:GetAttribute("Alive") ~= true then
+                Functions.RemoveESP(Object)
+            end
+        end)
         table.insert(Connections, Connection)
+        table.insert(Connections, DeadConnection)
         Object.Destroying:Once(function()
             Connection:Disconnect()
+            DeadConnection:Disconnect()
         end)
     end
 end
@@ -5065,9 +5099,16 @@ Connections.PlayerHandler = Services.Players.PlayerAdded:Connect(function(Object
                 Color = Options.PlayerESPColor.Value
             })
         end)
+        local DeadConnection = Object:GetAttributeChangedSignal("Alive"):Connect(function()
+            if Object:GetAttribute("Alive") ~= true then
+                Functions.RemoveESP(Object)
+            end
+        end)
         table.insert(Connections, Connection)
-        Object.Destroying:Connect(function()
+        table.insert(Connections, DeadConnection)
+        Object.Destroying:Once(function()
             Connection:Disconnect()
+            DeadConnection:Disconnect()
         end)
     end
 end)
@@ -5140,6 +5181,7 @@ local AutoInteractBlacklist = {
     "RevivePrompt",
     "EnterPrompt",
     "AnimatePrompt",
+    "ToolEventPrompt",
     "Prompt"
 }
 
@@ -5330,7 +5372,7 @@ Connections.FloorReplicatedHandler = FloorReplicated.DescendantAdded:Connect(fun
             Object.Name = "GlitchScreech_Disabled"
         end
     end
-    if string.find(Object.Name, "Jumpscare") and Object:IsA("ModuleScript") then
+    if string.find(Object.Name, "Jumpscare") and Object:IsA("ModuleScript") and not string.find(Object.Name, "Eyestalk") and not string.find(Object.Name, "Groundskeeper") and not string.find(Object.Name, "Monument") then
         Object:SetAttribute("OriginalName", Object.Name)
 
         if Toggles.DisableEntityJumpscares.Value then
