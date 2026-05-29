@@ -613,8 +613,10 @@ function Library:Unload()
 	for i,Object in pairs(Library.Objects) do
 		Library:RemoveESP(Object)
 	end
-	for i,Connection in pairs(ConnectionsTable) do
-		Connection:Disconnect()
+	for i, Table in pairs(ConnectionsTable) do
+		for i2, Connection in pairs(Table) do
+			Connection:Disconnect()
+		end
 	end
 	RainbowConnection:Disconnect()
 	CameraConnection:Disconnect()
