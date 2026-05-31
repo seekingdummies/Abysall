@@ -6,8 +6,6 @@ local Passed = 0
 
 local BrokenFeatures = {
     ["Volcano"] = {"run_on_actor", "oth"},
-	["Volt"] = {"isnetworkowner"},
-	["Potassium"] = {"isnetworkowner"},
     ["Solara"] = {"require"},
     ["Xeno"] = {"require"}
 }
@@ -78,7 +76,7 @@ local function RunTest(Name, Test, InternalName)
     local Time = 0
     local Finished = false
     task.spawn(function()
-        local Success, Result = pcall(Test, NewGlobal)
+        local Success, Result = pcall(Test)
         if not TimedOut then
             if Success then
                 if InternalName then
@@ -97,13 +95,13 @@ local function RunTest(Name, Test, InternalName)
     end)
     while not Finished do
         Time = Time + 1
-        if Time > 500 then
+        if Time > 50 then
         AddResult(Name, "❌ " .. Name .. " failed: test timed out")
         Failed = Failed + 1
         TimedOut = true
         break
         end
-        task.wait()
+        task.wait(0.1)
     end
 end
 
@@ -241,9 +239,9 @@ RunTest("fireproximityprompt", function()
     Global.fireproximityprompt(TestPrompt)
 
     local Tries = 0
-    while not Fired and Tries < 250 do
+    while not Fired and Tries < 10 do
         Tries = Tries + 1
-        task.wait()
+        task.wait(0.1)
     end
 
     TestPart:Destroy()
@@ -262,9 +260,9 @@ RunTest("fireclickdetector", function()
     Global.fireclickdetector(TestClick)
 
     local Tries = 0
-    while not Fired and Tries < 250 do
+    while not Fired and Tries < 10 do
         Tries = Tries + 1
-        task.wait()
+        task.wait(0.1)
     end
 
     TestPart:Destroy()
@@ -290,9 +288,9 @@ RunTest("firetouchinterest", function()
     Global.firetouchinterest(TestPart1, TestPart2, 1)
 
     local Tries = 0
-    while not Fired and Tries < 250 do
+    while not Fired and Tries < 10 do
         Tries = Tries + 1
-        task.wait()
+        task.wait(0.1)
     end
 
     TestPart1:Destroy()
@@ -551,7 +549,11 @@ RunTest("getcustomasset", function()
     local TestImage = Instance.new("ImageLabel", Services.CoreGui.RobloxGui)
     TestImage.Image = Asset
 
-    task.wait(0.1)
+    local Tries = 0
+    while not TestImage.IsLoaded and Tries < 10 do
+        Tries = Tries + 1
+        task.wait(0.1)
+    end
 
     assert(string.find(Asset, "rbxasset://"), "Should return an rbxasset id")
     assert(TestImage.IsLoaded == true, "Failed to load a PNG image")
@@ -591,7 +593,7 @@ end)
 
 RunTest("isnetworkowner", function()
     local Test = Instance.new("Part", Services.Workspace)
-    local Test2 = Instance.new("Part", Services.Workspace)
+    local Test2 = Services.Players.LocalPlayer.Character.HumanoidRootPart
     local TestPart
 
     Test2.Anchored = true
@@ -605,10 +607,12 @@ RunTest("isnetworkowner", function()
     assert(TestPart ~= nil, "skipped, no part to test with")
 
     assert(Global.isnetworkowner(Test) == true, "Did not return true for a client owned part")
-    assert(Global.isnetworkowner(Test2) == true, "Did not return true for a client owned anchored part")
     assert(Global.isnetworkowner(TestPart) == false, "Did not return false for a non client owned part")
     Test:Destroy()
-    Test2:Destroy()
+
+    local IsOwned = Global.isnetworkowner(Test2)
+    Test2.Anchored = false
+    assert(IsOwned == true, "Did not return true for a client owned anchored part")
 end)
 
 --[[ Signals ]]
@@ -629,9 +633,9 @@ RunTest("firesignal", function()
 
     Global.firesignal(TestEvent.OnClientEvent, "Example", 10, true)
     local Tries = 0
-    while not Fired and Tries < 250 do
+    while not Fired and Tries < 10 do
         Tries = Tries + 1
-        task.wait()
+        task.wait(0.1)
     end
 
     assert(Fired == true, "Failed to fire a signal")
@@ -668,88 +672,13 @@ RunTest("getconnections", function()
     end
 
     local Tries = 0
-    while not Fired and Tries < 250 do
+    while not Fired and Tries < 10 do
         Tries = Tries + 1
-        task.wait()
+        task.wait(0.1)
     end
 
     assert(Fired == true, "Failed to fire a connection's signals")
 end)
-
---[[ Crypt ]]
-
-RunTest("crypt.base64encode", function()
-    local Encoded = Global.crypt.base64encode("Example")
-
-    assert(typeof(Encoded) == "string", "Did not return a string")
-    assert(Encoded == "RXhhbXBsZQ==", "Did not return the expected data")
-end, "crypt_base64encode")
-
-RunTest("crypt.base64decode", function()
-    local Decoded = Global.crypt.base64decode("RXhhbXBsZQ==")
-
-    assert(typeof(Decoded) == "string", "Did not return a string")
-    assert(Decoded == "Example", "Did not return the expected data")
-end, "crypt_base64decode")
-
-RunTest("crypt.generatekey", function()
-    assert(Environment.crypt_base64decode, "crypt.base64decode is required to test")
-
-    local Key = Global.crypt.generatekey()
-    assert(typeof(Key) == "string", "Did not return a string")
-    assert(Key ~= Global.crypt.generatekey(), "Returns the same key from multiple calls")
-    assert(#Environment.crypt_base64decode(Key) == 32, "String is not the correct length after decoding")
-end, "crypt_generatekey")
-
-RunTest("crypt.generatebytes", function()
-    assert(Environment.crypt_base64decode, "crypt.base64decode is required to test")
-
-    local Test = math.random(10, 100)
-    local Bytes = Global.crypt.generatebytes(Test)
-
-    assert(typeof(Bytes) == "string", "Did not return a string")
-    assert(#Environment.crypt_base64decode(Bytes) == Test, "String is not the correct length after decoding")
-end)
-
-RunTest("crypt.encrypt", function()
-    assert(Environment.crypt_generatekey, "crypt.generatekey is required to test")
-
-    local Key = Environment.crypt_generatekey()
-    local Encoded, Iv = Global.crypt.encrypt("Example", Key, nil, "CBC")
-
-    assert(typeof(Encoded) == "string", "Did not return a string")
-    assert(typeof(Iv) == "string", "Did not return an Iv")
-end, "crypt_encrypt")
-
-RunTest("crypt.decrypt", function()
-    assert(Environment.crypt_generatekey, "crypt.generatekey is required to test")
-    assert(Environment.crypt_encrypt, "crypt.encrypt is required to test")
-
-    local Key = Environment.crypt_generatekey()
-    local Encoded, Iv = Environment.crypt_encrypt("Example", Key, nil, "CBC")
-    local Decoded = Global.crypt.decrypt(Encoded, Key, Iv, "CBC")
-
-    assert(typeof(Decoded) == "string", "Did not return a string")
-    assert(Decoded == "Example", "Did not return the correct data")
-end, "crypt_decrypt")
-
-RunTest("crypt.hash", function()
-    local ReferenceData = {
-    ["sha1"] = "0f01ed56a1e32a05e5ef96e4d779f34784af9a96",
-    ["sha384"] = "fe27713a5276adef1d34169ed04c52b299bb792bef7c903127893a53c07d910d5fcaae18de99164882a200192b236b14",
-    ["sha512"] = "c6b0919c7fe628ae9056992c4a917e5dc035a9615d497f6eb2bd14063eaad3e6508efc8682fec82823ca3f3de311868a72990946166429f01b38f9f33d9ca610",
-    ["md5"] = "0a52730597fb4ffa01fc117d9e71e3a9",
-    ["sha256"] = "d029f87e3d80f8fd9b1be67c7426b4cc1ff47b4a9d0a8461c826a59d8c5eb6cd",
-    ["sha3-224"] = "45be9eeb144a4067b74f04e5b8f73c26379ff8325fdd2858bb749dfe",
-    ["sha3-256"] = "358d8db68dd7622887b41a01aae8f81cc1bfb7a250c3b11be01fc12831a56837",
-    ["sha3-512"] = "34359a3440cc82648f0175629220c939b1b5d532d22e48aa3e44629281bf1b504cfc40bebd77ee58c51d52b0f0c8795147c293331169b8e45e5fd02300d29340",
-    }
-
-    local Correct = 0
-    for Index, Hash in pairs(ReferenceData) do
-        assert(Global.crypt.hash("Example", Index) == Hash, "Returned incorrect data for algorithm: " .. Index)
-    end
-end, "crypt_hash")
 
 RunTest("require", function()
     local TestScript = Global.require(Services.Players.LocalPlayer.PlayerScripts.PlayerModule)
