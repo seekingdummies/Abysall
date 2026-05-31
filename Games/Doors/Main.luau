@@ -5275,7 +5275,7 @@ if not Functions.CheckCompatability({"fireproximityprompt"}) then
                 TempPart.Anchored = true
                 TempPart.Transparency = 1
                 TempPart.Size = Vector3.new(0.001, 0.001, 0.001)
-                TempPart.Position = Camera.CFrame:ToWorldSpace(CFrame.new(0, 0, -5)).Position
+                TempPart.Position = Camera.CFrame:ToWorldSpace(CFrame.new(0, 0, -1)).Position
 
                 if not Prompt or not OldParent then
                     TempPart:Destroy()
@@ -5295,13 +5295,12 @@ if not Functions.CheckCompatability({"fireproximityprompt"}) then
                 end)
 
                 local Tries = 0
-                while not Shown and Tries < 5 do
+                while not Shown and Tries < 10 do
                     Tries = Tries + 1
                     task.wait()
                 end
 
                 Prompt:InputHoldBegin()
-                task.wait()
                 Prompt:InputHoldEnd()
                 task.wait()
                 Prompt.MaxActivationDistance = OldMaxActivationDistance
