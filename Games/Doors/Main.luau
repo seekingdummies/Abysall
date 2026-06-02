@@ -1,4 +1,4 @@
-local LoadStart = tick() + 0.5
+local LoadStart = tick()
 Abysall.SavePath = "Doors/Game"
 
 local Library = Abysall.Interface.Library
@@ -381,8 +381,12 @@ function NotificationLibrary:Notify(TitleText, Desc, Delay)
 		Services.TweenService:Create(Notification, TweenInfo.new(1, Enum.EasingStyle.Exponential), {Position = UDim2.new(1, -370, 0, Notification.Position.Y.Offset)}):Play()
 
 		task.wait(0.25)
-		Services.TweenService:Create(Line, TweenInfo.new(Delay - 0.25, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 400, 0, 3)}):Play()
-		task.wait(Delay - 0.25)
+		if typeof(Delay) == "Instance" then
+            Delay.Destroying:Wait()
+        else
+            Services.TweenService:Create(Line, TweenInfo.new(Delay - 0.25, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 400, 0, 3)}):Play()
+            task.wait(Delay - 0.25)
+        end
 
         Notification:SetAttribute("Destroying", true)
 		Services.TweenService:Create(Notification, TweenInfo.new(0.75, Enum.EasingStyle.Exponential, Enum.EasingDirection.In), {Position = UDim2.new(1, 5, 0, Notification.Position.Y.Offset)}):Play()
@@ -399,7 +403,68 @@ function NotificationLibrary:Notify(TitleText, Desc, Delay)
 	end)
 end
 
-Globals.DoorsNotify = loadstring(game:HttpGet("https://raw.githubusercontent.com/Msdoors/Msdoors.gg/refs/heads/main/Scripts/Msdoors/Notification/Source.lua"))()
+Globals.DoorsNotify = function(Options)
+    local function PlaySound(Parent, SoundId, Volume)
+        local Sound = Instance.new("Sound")
+        Sound.SoundId = SoundId
+        Sound.Volume = Volume or 1
+        Sound.Parent = Parent
+        task.spawn(function()
+            task.wait(0.1)
+            Sound:Play()
+            Sound.Ended:Wait()
+            Sound:Destroy()
+        end)
+    end
+
+    local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+    local UIContainer = PlayerGui:FindFirstChild("GlobalUI") or PlayerGui:FindFirstChild("MainUI")
+    if not UIContainer then return end
+
+    local AchievementsHolder = UIContainer:FindFirstChild("AchievementsHolder")
+    if not AchievementsHolder then return end
+
+    local Achievement = AchievementsHolder.Achievement:Clone()
+    Achievement.Size = UDim2.new(0, 0, 0, 0)
+    Achievement.Frame.Position = UDim2.new(1.1, 0, 0, 0)
+    Achievement.Name = "LiveAchievement"
+    Achievement.Visible = true
+
+    Achievement.Frame.TextLabel.Text = Options.Style or "NOTIFICATION"
+    Achievement.Frame.Details.Title.Text = Options.Title or "Sem Título"
+    Achievement.Frame.Details.Desc.Text = Options.Description or "Sem Descrição"
+    Achievement.Frame.Details.Reason.Text = Options.Reason or ""
+
+    Achievement.Frame.ImageLabel.Image = Options.Image ~= "" and Options.Image or "rbxassetid://6023426923"
+
+    local Color = Options.Color or Color3.new(1, 1, 1)
+    Achievement.Frame.TextLabel.TextColor3 = Color
+    Achievement.Frame.UIStroke.Color = Color
+    Achievement.Frame.Glow.ImageColor3 = Color
+
+    Achievement.Parent = AchievementsHolder
+
+    local SoundId = "rbxassetid://10469938989"
+    PlaySound(AchievementsHolder, SoundId, 1)
+
+    task.spawn(function()
+        Achievement:TweenSize(UDim2.new(1, 0, 0.2, 0), "In", "Quad", 0.8, true)
+        task.wait(0.8)
+        Achievement.Frame:TweenPosition(UDim2.new(0, 0, 0, 0), "Out", "Quad", 0.5, true)
+        Services.TweenService:Create(Achievement.Frame.Glow, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { ImageTransparency = 1 }):Play()
+        if typeof(Options.Time) == "Instance" then
+            Options.Time.Destroying:Wait()
+        else
+            task.wait(Options.Time or 5)
+        end
+        Achievement.Frame:TweenPosition(UDim2.new(1.1, 0, 0, 0), "In", "Quad", 0.5, true)
+        task.wait(0.5)
+        Achievement:TweenSize(UDim2.new(1, 0, -0.1, 0), "InOut", "Quad", 0.5, true)
+        task.wait(0.5)
+        Achievement:Destroy()
+    end)
+end
+
 Functions.Notify = function(Settings)
     local Container
     if Functions.CheckCompatability({"gethui"}) then
@@ -430,13 +495,14 @@ Functions.Notify = function(Settings)
             end
         end
 
-        Globals.DoorsNotify("Doors", {
+        Globals.DoorsNotify({
             Title = "Abysall Hub",
             Description = Settings.Title,
             Reason = Settings.Body,
             Style = IsEntity and "WARNING" or "NOTIFICATION",
             Color = (IsEntity and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(255, 222, 189)),
-            Image = Settings.Image
+            Image = Settings.Image,
+            Time = Settings.Time
         })
     else
         local Sound = Instance.new("Sound", Container)
@@ -895,6 +961,22 @@ Functions.GetLibraryCode = function()
         return table.concat(Code)
     end
     return Floor == "Fools" and "__________" or "_____"
+end
+
+Globals.UsedRandomCodes = {}
+Functions.GetRandomCode = function()
+    local Code = Functions.GetLibraryCode()
+    if Code then
+        local Result
+        while not Result or table.find(Globals.UsedRandomCodes, Result) do
+            local NewCode = Code:gsub("_", function()
+                return tostring(math.random(1, 10) - 1)
+            end)
+            Result = NewCode
+        end
+        table.insert(Globals.UsedRandomCodes, Result)
+        return Result
+    end
 end
 
 local Window = Library:CreateWindow({
@@ -2073,8 +2155,8 @@ Toggles.NotifyLibraryCode:OnChanged(function(Value)
     if Value then
         local Code = Functions.GetLibraryCode()
         if Code and not string.find(Code, "_") and Globals.LibraryCodeFound ~= true and CurrentRooms:FindFirstChild("50") then
-            local Lock = workspace:FindFirstChild("Padlock", true)
-            Functions.Notify({Title = "Padlock code found!", Body = "The code is: '" .. Code .. "'", Time = 15})
+            local Lock = Services.Workspace:FindFirstChild("Padlock", true)
+            Functions.Notify({Title = "Padlock code found!", Body = "The code is: '" .. Code .. "'", Time = (Toggles.NotifyKeepNotifications.Value and Lock or 15)})
             Globals.LibraryCodeFound = true
         end
     end
@@ -2119,6 +2201,12 @@ Groupboxes.Visuals_EntitySettings:AddToggle("NotifyPlaySound", {
     Text = "Play Sound",
     Default = true,
     Tooltip = "Makes notifications play an alert sound."
+})
+
+Groupboxes.Visuals_EntitySettings:AddToggle("NotifyKeepNotifications", {
+    Text = "Keep Notifications",
+    Default = false,
+    Tooltip = "Certain notifications will stay on screen until they are no longer needed."
 })
 
 Groupboxes.Visuals_ESP = Tabs.Visuals:AddRightTabbox("ESP/Settings")
@@ -2285,7 +2373,7 @@ Toggles.HidingSpotESPToggle:AddColorPicker("HidingSpotESPColor", {
 Toggles.HidingSpotESPToggle:OnChanged(function(Value)
     for Index, Object in (Objects.HidingSpots) do
         if Value then
-            if Object.Name == "Wardrobe" or Object.Name == "Backdoor_Wardrobe" or Object.Name == "Toolshed" or Object.Name == "RetroWardrobe" then
+            if Object.Name == "Wardrobe" or Object.Name == "Backdoor_Wardrobe" or Object.Name == "Toolshed" or Object.Name == "RetroWardrobe" or Object.Name == "Wardrobe-FOOLS26" then
                 Functions.AddESP({
                     Object = Object,
                     Text = "Closet",
@@ -3603,8 +3691,8 @@ Functions.HandleCharacter = function(NewCharacter)
         if Toggles.NotifyLibraryCode.Value then
             local Code = Functions.GetLibraryCode()
             if Code and not string.find(Code, "_") and Globals.LibraryCodeFound ~= true then
-                local Lock = workspace:FindFirstChild("Padlock", true)
-                Functions.Notify({Title = "Padlock code found!", Body = "The code is: '" .. Code .. "'", Time = 15})
+                local Lock = Services.Workspace:FindFirstChild("Padlock", true)
+                Functions.Notify({Title = "Padlock code found!", Body = "The code is: '" .. Code .. "'", Time = (Toggles.NotifyKeepNotifications.Value and Lock or 15)})
                 Globals.LibraryCodeFound = true
             end
         end
@@ -3614,8 +3702,8 @@ Functions.HandleCharacter = function(NewCharacter)
         if Child.Name == "LibraryHintPaper" and Toggles.NotifyLibraryCode.Value or Child.Name == "LibraryHintPaperHard" and Toggles.NotifyLibraryCode.Value then
             local Code = Functions.GetLibraryCode()
             if Code and not string.find(Code, "_") and Globals.LibraryCodeFound ~= true then
-                local Lock = workspace:FindFirstChild("Padlock", true)
-                Functions.Notify({Title = "Padlock code found!", Body = "The code is: '" .. Code .. "'", Time = 15})
+                local Lock = Services.Workspace:FindFirstChild("Padlock", true)
+                Functions.Notify({Title = "Padlock code found!", Body = "The code is: '" .. Code .. "'", Time = (Toggles.NotifyKeepNotifications.Value and Lock or 15)})
                 Globals.LibraryCodeFound = true
             end
         end
@@ -4041,6 +4129,7 @@ Globals.AllowedInstances = {
     ["Toolbox"] = true,
     ["Toolbox_Locked"] = true,
     ["Wardrobe"] = true,
+    ["Wardrobe-FOOLS26"] = true,
     ["Toolshed"] = true,
     ["Toolshed_Small"] = true,
     ["Bed"] = true,
@@ -4617,7 +4706,7 @@ Functions.HandleObject = function(Object)
         Object.Name = "_EyestalkEndCutscene"
     elseif Object.Name == "DuckBoard" then
         table.insert(Objects.SeekDuckBoards, Object)
-    elseif Object.Name == "Wardrobe" or Object.Name == "Backdoor_Wardrobe" or Object.Name == "Toolshed" or Object.Name == "RetroWardrobe" then
+    elseif Object.Name == "Wardrobe" or Object.Name == "Backdoor_Wardrobe" or Object.Name == "Toolshed" or Object.Name == "RetroWardrobe" or Object.Name == "Wardrobe-FOOLS26" then
         if Toggles.HidingSpotESPToggle.Value then
             Functions.AddESP({
                 Object = Object,
@@ -5136,13 +5225,10 @@ Functions.HandleObject = function(Object)
             end
             if Toggles.AutoLibraryGuessCode.Value and Object.PrimaryPart and LatestRoom.Value == 50 then
                 local Distance = LocalPlayer:DistanceFromCharacter(Object.PrimaryPart.Position)
-                local Code = Functions.GetLibraryCode()
+                local Code = Functions.GetRandomCode()
 
                 if Code then
-                    local NewCode = Code:gsub("_", function()
-                        return tostring(math.random(1, 10) - 1)
-                    end)
-                    RemotesFolder.PL:FireServer(NewCode)
+                    RemotesFolder.PL:FireServer(Code)
                 end
             end
         end)
@@ -5268,7 +5354,7 @@ if not Functions.CheckCompatability({"fireproximityprompt"}) then
                 Prompt.RequiresLineOfSight = false
 
                 local TempPart = Instance.new("Part")
-                TempPart.Parent = workspace
+                TempPart.Parent = Services.Workspace
                 TempPart.CanCollide = false
                 TempPart.CanQuery = false
                 TempPart.CanTouch = false
@@ -5627,7 +5713,7 @@ Connections.EntityHandler = Services.Workspace.ChildAdded:Connect(function(Entit
                     Alias = Entity.PrimaryPart.Name
                 end
 
-                Functions.Notify({Title = NotifyMessage.Title, Body = NotifyMessage.Body, Image = NotifyMessage.Image})
+                Functions.Notify({Title = NotifyMessage.Title, Body = NotifyMessage.Body, Image = NotifyMessage.Image, Time = (Toggles.NotifyKeepNotifications.Value and Entity or nil)})
 
                 if Toggles.EntityChatToggle.Value then
                     Functions.SendChat(Alias .. " " .. Options.EntityChatMessage.Value)
