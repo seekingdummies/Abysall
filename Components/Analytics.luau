@@ -21,13 +21,17 @@ if Abysall.Environment.identifyexecutor and Abysall.Environment.request then
         GameName = Services.MarketplaceService:GetProductInfo(game.PlaceId).Name,
         PlaceId = tostring(game.PlaceId)
     }
-    
-    Abysall.Environment.request({
-        Url = "http://93.115.101.180:10577/send",
-        Method = "POST",
-        Headers = {
-            ["content-type"] = "application/json"
-        },
-        Body = Services.HttpService:JSONEncode(Data)
-    })
+
+    task.spawn(function()
+        pcall(function()
+            Abysall.Environment.request({
+                Url = "http://93.115.101.180:10577/send",
+                Method = "POST",
+                Headers = {
+                    ["content-type"] = "application/json"
+                },
+                Body = Services.HttpService:JSONEncode(Data)
+            })
+        end)
+    end)
 end
