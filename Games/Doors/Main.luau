@@ -907,6 +907,10 @@ Functions.AddESP = function(Options, RoomBased)
             Abysall.ESPLibrary:AddESP(Options)
         end
         local Connection = LocalPlayer:GetAttributeChangedSignal("CurrentRoom"):Connect(function()
+            if Abysall.ESPLibrary.ColorTable[Object] then
+                Options.Color = Abysall.ESPLibrary.ColorTable[Object]
+            end
+
             if tonumber(Object:GetAttribute("ParentRoom")) == tonumber(LocalPlayer:GetAttribute("CurrentRoom")) or table.find(Objects.Doors, Object) and tonumber(Object:GetAttribute("ParentRoom")) == tonumber(LocalPlayer:GetAttribute("CurrentRoom")) + 1 then
                 Abysall.ESPLibrary:AddESP(Options)
             else
