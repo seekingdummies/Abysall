@@ -68,8 +68,4 @@ return function(Window)
 	    toclipboard("https://discord.gg/5jwbZcqjVF")
 	    Library:Notify("Discord invite copied.")
     end)
-	Community:AddButton("Copy Youtube Channel", function()
-	    toclipboard("https://youtube.com/channel/UCo4LwRkDBdVKmQAwHYdLRiA")
-	    Library:Notify("Youtube channel copied.")
-    end)
 end
