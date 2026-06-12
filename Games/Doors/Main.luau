@@ -2402,25 +2402,27 @@ end)
 Globals.KnobFarmActive = false
 Globals.KnobFarmStarted = false
 Connections.KnobFarm = Services.RunService.Heartbeat:Connect(function()
-    local GoldCount = LocalPlayer.PlayerGui.TopbarUI.Topbar.StatsTopbarHandler.StatModules.Gold.GoldVal
-    if Toggles.KnobFarm.Value and GoldCount.Value > 0 and Globals.KnobFarmStarted then
-        if not Globals.KnobFarmActive then
-            Globals.KnobFarmActive = true
-            if Functions.CheckCompatability({"replicatesignal"}) then
-                Abysall.Environment.replicatesignal(LocalPlayer.Kill)
-            else
-                RemotesFolder.Underwater:FireServer(true)
-            end
-            while task.wait() do
-                if LocalPlayer:GetAttribute("Alive") then
-                    break
-                end
-            end
-            RemotesFolder.Statistics:FireServer()
-            task.wait(0.5)
-            Globals.KnobFarmActive = false
-        end
-    end
+	if LocalPlayer.PlayerGui:FindFirstChild("TopBarUI") then 
+		local GoldCount = LocalPlayer.PlayerGui.TopbarUI.Topbar.StatsTopbarHandler.StatModules.Gold.GoldVal
+		if Toggles.KnobFarm.Value and GoldCount.Value > 0 and Globals.KnobFarmStarted then
+			if not Globals.KnobFarmActive then
+				Globals.KnobFarmActive = true
+				if Functions.CheckCompatability({"replicatesignal"}) then
+					Abysall.Environment.replicatesignal(LocalPlayer.Kill)
+				else
+					RemotesFolder.Underwater:FireServer(true)
+				end
+				while task.wait() do
+					if LocalPlayer:GetAttribute("Alive") then
+						break
+					end
+				end
+				RemotesFolder.Statistics:FireServer()
+				task.wait(0.5)
+				Globals.KnobFarmActive = false
+			end
+		end
+	end
 end)
 
 local MainHook
