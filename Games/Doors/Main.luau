@@ -2494,6 +2494,14 @@ local CharacterOldConnectionKeys = {
 	"FootstepHandler"
 }
 
+Globals.IsTyping = false
+Connections.TextBoxConnection1 = Services.UserInputService.TextBoxFocused:Connect(function()
+	Globals.IsTyping = true
+end)
+Connections.TextBoxConnection2 = Services.UserInputService.TextBoxFocusReleased:Connect(function()
+	Globals.IsTyping = false
+end)
+
 Functions.HandleCharacter = function(NewCharacter)
 	for _, Key in CharacterOldConnectionKeys do
 		if Connections[Key] then
@@ -2765,7 +2773,7 @@ Functions.HandleCharacter = function(NewCharacter)
 	end)
 
 	Connections.InfiniteJumpsConnection1 = Services.UserInputService.InputBegan:Connect(function(Input)
-		if Input.KeyCode == Enum.KeyCode.Space and Toggles.InfiniteJumps.Value then
+		if Input.KeyCode == Enum.KeyCode.Space and Toggles.InfiniteJumps.Value and not Globals.IsTyping then
 			Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
 		end
 	end)
