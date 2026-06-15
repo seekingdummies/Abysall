@@ -1,16 +1,12 @@
 return function(Window)
     local LatestChangelog = {
-        "12/6/2026",
-        "<font color='rgb(0, 255, 0)'>+ Added Remove Cutscenes</font>",
-		"<font color='rgb(0, 255, 0)'>+ Added Spectate Entity (Auto Hide)</font>",
-		"<font color='rgb(0, 255, 0)'>+ Added Spoof Footsteps (Auto Rooms)</font>",
-		"<font color='rgb(0, 255, 0)'>+ Added STX Notification Style</font>",
-		"<font color='rgb(0, 255, 0)'>+ Added Auto Complete Dam Seek</font>",
-		"<font color='rgb(0, 255, 0)'>+ Added Auto Complete Cringle</font>",
-		"<font color='rgb(0, 255, 0)'>+ Added Knob Farm</font>",
-		"<font color='rgb(0, 255, 0)'>+ Improved Auto Interact</font>",
-		"<font color='rgb(0, 255, 0)'>+ Improved Position Spoof</font>",
-		"<font color='rgb(0, 255, 0)'>+ Improved Various Things</font>",
+        "15/6/2026",
+        "<font color='rgb(0, 255, 0)'>+ Added Auto Hearbeat Minigame</font>",
+		"<font color='rgb(0, 255, 0)'>+ Added Figure Godmode (Hotel-, Super Hard Mode)</font>",
+		"<font color='rgb(0, 255, 0)'>+ Improved Position Spoof (Hotel-, Super Hard Mode)</font>",
+		"<font color='rgb(0, 255, 0)'>+ Added Test Notification Button</font>",
+		"<font color='rgb(0, 255, 0)'>+ Added Door Numbers to ESP</font>",
+		"<font color='rgb(0, 255, 0)'>+ Other Improvements</font>",
     }
 
     local function CloneReference(Object)
