@@ -2549,7 +2549,7 @@ Functions.HandleCharacter = function(NewCharacter)
 		end
 	end
 
-	task.wait(1)
+	task.wait()
 
 	Character = NewCharacter
 	Humanoid = NewCharacter:WaitForChild("Humanoid", 9e9)
@@ -2770,7 +2770,7 @@ Functions.HandleCharacter = function(NewCharacter)
 	end)
 
 	Connections.AnimationHandler = Character.ChildAdded:Connect(function()
-		local ToolNames = { "Lockpick","Shears","SkeletonKey","Key","KeyElectrical","KeyBackdoor","KeyIron" }
+		local ToolNames = { "Lockpick","Shears","SkeletonKey","Key","GeneratorFuse","KeyElectrical","KeyBackdoor","KeyIron", "Multitool" }
 		local Tool
 		for _, Name in ToolNames do
 			Tool = Character:FindFirstChild(Name)
@@ -3847,13 +3847,29 @@ end
 
 Connections.PromptAnimationFixer1 = Services.ProximityPromptService.PromptButtonHoldBegan:Connect(function(Object)
 	if not Object:GetAttribute("FakePrompt") then return end
-	local ToolNames = { "Lockpick","Shears","SkeletonKey","Key","KeyElectrical","KeyBackdoor","KeyIron" }
+	local ToolNames = { "Lockpick","Shears","SkeletonKey","Key","GeneratorFuse","KeyElectrical","KeyBackdoor","KeyIron", "Multitool" }
 	local Tool
 	for _, N in ToolNames do Tool = Character:FindFirstChild(N) if Tool then break end end
 
-	if Object.Parent.Name == "SkullLock" and not Functions.HasItem("SkeletonKey", true) then return end
-	if Object.Parent.Name == "Lock1" and not Functions.HasItem("Lockpick", true) or Object.Parent.Name == "Lock2" and not Functions.HasItem("Lockpick", true) then return end
-	if Functions.HasItem("Shears", true) and Object.Parent.Name ~= "CuttableVines" and Object.Parent.Name ~= "Chest_Vine" then return end
+	local Prompt = Object
+	local LockPromptNames = { UnlockPrompt=true, SkullPrompt=true, LockPrompt=true, ThingToEnable=true, FusesPrompt=true }
+	local IsLockPrompt = LockPromptNames[Object.Name]
+		or (Object.Parent and Object.Parent:GetAttribute("Locked") == true)
+		or (Object.Parent and Object.Parent.Parent and Object.Parent.Parent.Name == "Locker_Small_Locked" and Object.Name == "ActivateEventPrompt")
+	if IsLockPrompt then
+		if Options.AutoInteractIgnoreList.Value["Locks"] then return end
+		local KeyItems = { "Key","GeneratorFuse","KeyBackdoor","KeyElectrical","KeyIron","Lockpick","SkeletonKey","Shears","Multitool" }
+		local OffhandKeyItems = { "Key","GeneratorFuse","KeyElectrical","KeyIron" }
+		local HasKey = false
+		for _, K in KeyItems do if Functions.HasItem(K, true) then HasKey = true break end end
+		for _, K in OffhandKeyItems do if Functions.HasItem(K) then HasKey = true break end end
+		if not HasKey then return end
+	end
+
+	if Prompt.Parent.Name == "CuttableVines" and not Functions.HasItem("Shears", true) and not Functions.HasItem("Multitool", true) or Prompt.Parent.Name == "Chest_Vine" and not Functions.HasItem("Shears", true) and not Functions.HasItem("Multitool", true) or Prompt.Parent.Name == "Cellar" and not Functions.HasItem("Shears", true) and not Functions.HasItem("Multitool", true) then return end
+	if Prompt.Parent.Name == "SkullLock" and not Functions.HasItem("SkeletonKey", true) then return end
+	if Prompt.Parent.Name == "Lock1" and not Functions.HasItem("Lockpick", true) and not Functions.HasItem("Multitool", true) or Prompt.Parent.Name == "Lock2" and not Functions.HasItem("Lockpick", true) and not Functions.HasItem("Multitool", true) then return end
+	if Functions.HasItem("Shears", true) and IsLockPrompt and Prompt.Parent.Name ~= "CuttableVines" and Prompt.Parent.Name ~= "Chest_Vine" and Prompt.Parent.Name ~= "Cellar" then return end
 	
 	if Tool and Globals.UseAnimation then
 		Globals.UseAnimationBreak:Stop()
@@ -4012,22 +4028,25 @@ Functions.TriggerPrompt = function(Prompt)
 		and ParentItem:GetAttribute("Durability") >= ParentItem:GetAttribute("DurabilityMax")
 	then return end
 
-	local IsLockPrompt = Prompt.Name == "UnlockPrompt" or Prompt.Name == "SkullPrompt"
-		or (Prompt.Parent:GetAttribute("Locked") == true and Prompt.Name == "ActivateEventPrompt")
-		or (Prompt.Parent.Parent and Prompt.Parent.Parent:GetAttribute("Locked") == true and Prompt.Name == "ActivateEventPrompt")
-		or Prompt.Parent.Name == "Lock1" or Prompt.Parent.Name == "Lock2"
+	local LockPromptNames = { UnlockPrompt=true, SkullPrompt=true, LockPrompt=true, ThingToEnable=true, FusesPrompt=true }
+	local IsLockPrompt = LockPromptNames[Prompt.Name]
+		or (Prompt.Parent and Prompt.Parent:GetAttribute("Locked") == true)
+		or (Prompt.Parent and Prompt.Parent.Parent and Prompt.Parent.Parent.Name == "Locker_Small_Locked" and Prompt.Name == "ActivateEventPrompt")
 
 	if IsLockPrompt then
 		if Options.AutoInteractIgnoreList.Value["Locks"] then return end
-		local KeyItems = { "Key","KeyBackdoor","KeyElectrical","KeyIron","Lockpick","SkeletonKey","Shears","Multitool" }
+		local KeyItems = { "Key","GeneratorFuse","KeyBackdoor","KeyElectrical","KeyIron","Lockpick","SkeletonKey","Shears","Multitool" }
+		local OffhandKeyItems = { "Key","GeneratorFuse","KeyElectrical","KeyIron" }
 		local HasKey = false
 		for _, K in KeyItems do if Functions.HasItem(K, true) then HasKey = true break end end
+		for _, K in OffhandKeyItems do if Functions.HasItem(K) then HasKey = true break end end
 		if not HasKey then return end
 	end
 
+	if Prompt.Parent.Name == "CuttableVines" and not Functions.HasItem("Shears", true) and not Functions.HasItem("Multitool", true) or Prompt.Parent.Name == "Chest_Vine" and not Functions.HasItem("Shears", true) and not Functions.HasItem("Multitool", true) or Prompt.Parent.Name == "Cellar" and not Functions.HasItem("Shears", true) and not Functions.HasItem("Multitool", true) then return end
 	if Prompt.Parent.Name == "SkullLock" and not Functions.HasItem("SkeletonKey", true) then return end
-	if Prompt.Parent.Name == "Lock1" and not Functions.HasItem("Lockpick", true) or Prompt.Parent.Name == "Lock2" and not Functions.HasItem("Lockpick", true) then return end
-	if Functions.HasItem("Shears", true) and Prompt.Parent.Name ~= "CuttableVines" and Prompt.Parent.Name ~= "Chest_Vine" then return end
+	if Prompt.Parent.Name == "Lock1" and not Functions.HasItem("Lockpick", true) and not Functions.HasItem("Multitool", true) or Prompt.Parent.Name == "Lock2" and not Functions.HasItem("Lockpick", true) and not Functions.HasItem("Multitool", true) then return end
+	if Functions.HasItem("Shears", true) and IsLockPrompt and Prompt.Parent.Name ~= "CuttableVines" and Prompt.Parent.Name ~= "Chest_Vine" and Prompt.Parent.Name ~= "Cellar" then return end
 
 	if Prompt.Parent.Name == "GlitchCube" and Options.AutoInteractIgnoreList.Value["Glitch Fragments"] then return end
 
@@ -4111,13 +4130,29 @@ end)
 Connections.InfiniteItemsHandler = Services.ProximityPromptService.PromptTriggered:Connect(function(Object)
 	if not Object:GetAttribute("FakePrompt") then return end
 
-	local ToolNames = { "Lockpick","Shears","SkeletonKey","Key","KeyElectrical","KeyBackdoor","KeyIron" }
+	local ToolNames = { "Lockpick","Shears","SkeletonKey","Key","GeneratorFuse","KeyElectrical","KeyBackdoor","KeyIron", "Multitool" }
 	local Tool
 	for _, N in ToolNames do Tool = Character:FindFirstChild(N) if Tool then break end end
 
-	if Object.Parent.Name == "SkullLock" and not Functions.HasItem("SkeletonKey", true) then return end
-	if Object.Parent.Name == "Lock1" and not Functions.HasItem("Lockpick", true) or Object.Parent.Name == "Lock2" and not Functions.HasItem("Lockpick", true) then return end
-	if Functions.HasItem("Shears", true) and Object.Parent.Name ~= "CuttableVines" and Object.Parent.Name ~= "Chest_Vine" then return end
+	local Prompt = Object
+	local LockPromptNames = { UnlockPrompt=true, SkullPrompt=true, LockPrompt=true, ThingToEnable=true, FusesPrompt=true }
+	local IsLockPrompt = LockPromptNames[Object.Name]
+		or (Object.Parent and Object.Parent:GetAttribute("Locked") == true)
+		or (Object.Parent and Object.Parent.Parent and Object.Parent.Parent.Name == "Locker_Small_Locked" and Object.Name == "ActivateEventPrompt")
+	if IsLockPrompt then
+		if Options.AutoInteractIgnoreList.Value["Locks"] then return end
+		local KeyItems = { "Key","GeneratorFuse","KeyBackdoor","KeyElectrical","KeyIron","Lockpick","SkeletonKey","Shears","Multitool" }
+		local OffhandKeyItems = { "Key","GeneratorFuse","KeyElectrical","KeyIron" }
+		local HasKey = false
+		for _, K in KeyItems do if Functions.HasItem(K, true) then HasKey = true break end end
+		for _, K in OffhandKeyItems do if Functions.HasItem(K) then HasKey = true break end end
+		if not HasKey then return end
+	end
+
+	if Prompt.Parent.Name == "CuttableVines" and not Functions.HasItem("Shears", true) and not Functions.HasItem("Multitool", true) or Prompt.Parent.Name == "Chest_Vine" and not Functions.HasItem("Shears", true) and not Functions.HasItem("Multitool", true) or Prompt.Parent.Name == "Cellar" and not Functions.HasItem("Shears", true) and not Functions.HasItem("Multitool", true) then return end
+	if Prompt.Parent.Name == "SkullLock" and not Functions.HasItem("SkeletonKey", true) then return end
+	if Prompt.Parent.Name == "Lock1" and not Functions.HasItem("Lockpick", true) and not Functions.HasItem("Multitool", true) or Prompt.Parent.Name == "Lock2" and not Functions.HasItem("Lockpick", true) and not Functions.HasItem("Multitool", true) then return end
+	if Functions.HasItem("Shears", true) and IsLockPrompt and Prompt.Parent.Name ~= "CuttableVines" and Prompt.Parent.Name ~= "Chest_Vine" and Prompt.Parent.Name ~= "Cellar" then return end
 
 	if Tool and Globals.UseAnimation and Globals.UseAnimationBreak then
 		Globals.UseAnimation:Stop()
