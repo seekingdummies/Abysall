@@ -3077,9 +3077,8 @@ Functions.HandleCharacter = function(NewCharacter)
 			Camera.CFrame = CamPosition
 		end
 
-		task.wait()
-
 		if Main_Game then
+			task.wait()
 			Main_Game.fovtarget = Options.FieldOfView.Value
 		else
 			Camera.FieldOfView = Options.FieldOfView.Value
