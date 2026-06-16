@@ -1697,7 +1697,7 @@ Toggles.NotifyLibraryCode:OnChanged(function(Value)
 	end
 end)
 
-Groupboxes.Visuals_EntitySettings:AddToggle("EntityChatToggle", { Text = "Chat Message", Default = false, Tooltip = "Sends a message in the chat when an entity spawns." })
+Groupboxes.Visuals_EntitySettings:AddToggle("EntityChatToggle", { Text = "Notify Chat", Default = false, Tooltip = "Sends a message in the chat when an entity spawns." })
 Groupboxes.Visuals_EntitySettings:AddInput("EntityChatMessage", { Text = "Message", Default = "spawned!", Numeric = false, Placeholder = "Message" })
 Groupboxes.Visuals_EntitySettings:AddDivider()
 Groupboxes.Visuals_EntitySettings:AddDropdown("NotifyStyle", { Text = "Notify Style", Values = { "Abysall", "Doors", "STX", "Library" }, Default = 1 })
