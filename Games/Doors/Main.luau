@@ -2549,7 +2549,9 @@ Functions.HandleCharacter = function(NewCharacter)
 		end
 	end
 
-	task.wait()
+	while not LocalPlayer.PlayerGui:FindFirstChild("MainUI") do
+		task.wait()
+	end
 
 	Character = NewCharacter
 	Humanoid = NewCharacter:WaitForChild("Humanoid", 9e9)
