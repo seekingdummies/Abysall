@@ -3659,7 +3659,7 @@ Functions.HandleObject = function(Object)
 		table.insert(Objects.Entities, Object)
 
 		if Object:FindFirstChild("Snare") then
-			Object:WaitForChild("Snare"):WaitForChild("Root").Transparency = 1
+			Object:WaitForChild("Snare"):WaitForChild("Roots").Transparency = 1
 			Object:WaitForChild("Snare"):WaitForChild("SnareBase").Transparency = 1
 		end
 		if Object:FindFirstChild("Void") then
