@@ -3562,24 +3562,6 @@ Functions.HandleObject = function(Object)
 		if Toggles.ChestESPToggle.Value then Functions.AddESP({ Object = Object, Text = "Mouse", Color = Options.ChestESPColor.Value }, true) end
 		table.insert(Objects.Chests, Object)
 	elseif ItemNames[Name] and Object:FindFirstChild("ModulePrompt") then
-		local Nearest = {
-			Room = nil,
-			Distance = math.huge
-		}
-		for _, Player in pairs(Services.Players:GetPlayers()) do
-			if Player.Character then
-				local Distance = (Player.Character:GetPivot().Position - Object:GetPivot().Position).Magnitude
-				if Distance < Nearest.Distance and Nearest.Distance < 10 then
-					Nearest.Room = tonumber(Player:GetAttribute("CurrentRoom"))
-					Nearest.Distance = Distance
-				end
-			end
-		end
-
-		if Nearest.Room and not Object:GetAttribute("ParentRoom") then
-			Object:SetAttribute("ParentRoom", (Floor == "Party" and tonumber(Nearest.Room) + 1 or tonumber(Nearest.Room)))
-		end
-
 		if Toggles.ItemESPToggle.Value then Functions.AddESP({ Object = Object, Text = ItemNames[Name], Color = Options.ItemESPColor.Value }, Object:GetAttribute("ParentRoom") ~= nil) end
 		if Name == "LotusHolder" or Name == "LotusPetalPickup" then
 			Object.Handle:GetPropertyChangedSignal("LocalTransparencyModifier"):Connect(function()
@@ -4146,7 +4128,7 @@ Connections.AutoInteract = Services.RunService.Heartbeat:Connect(function()
 			else
 				Distance = LocalPlayer:DistanceFromCharacter(Prompt.Parent:GetPivot().Position)
 			end
-			if Distance <= Prompt.MaxActivationDistance and Prompt.Enabled or Distance <= Prompt.MaxActivationDistance and Prompt.Name == "LongPushPrompt" then
+			if Distance <= Prompt.MaxActivationDistance and Prompt.Enabled or Distance <= Prompt.MaxActivationDistance and Prompt.Name == "LongPushPrompt" or Distance <= Prompt.MaxActivationDistance and Prompt.Name == "BigPropPrompt" then
 				task.spawn(Functions.TriggerPrompt, Prompt)
 			end
 		end
