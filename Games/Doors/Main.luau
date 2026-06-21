@@ -1056,7 +1056,7 @@ local CustomPhysics
 
 Options.SpeedBoostSlider:OnChanged(function(Value)
 	if RemotesFolder:FindFirstChild("Crouch") then
-		RemotesFolder.Crouch:FireServer(Value and true or Functions.IsCrouching())
+		RemotesFolder.Crouch:FireServer(Value and true or Functions.IsCrouching(), true)
 	end
 end)
 
@@ -1426,7 +1426,7 @@ Toggles.PositionSpoof:OnChanged(function(Value)
 		if Value then
 			RootPart.CFrame = RootPart.CFrame * CFrame.new(0, -2.346, 0)
 			Humanoid.HipHeight = 0.05
-			RemotesFolder.Crouch:FireServer(true)
+			RemotesFolder.Crouch:FireServer(true, true)
 		else
 			RootPart.CFrame = RootPart.CFrame * CFrame.new(0, 2.346, 0)
 			Humanoid.HipHeight = 2.396
@@ -1438,7 +1438,7 @@ Toggles.PositionSpoof:AddKeyPicker("PositionSpoof", {
 })
 Toggles.CrouchSpoof:OnChanged(function(Value)
 	if RemotesFolder:FindFirstChild("Crouch") then
-		RemotesFolder.Crouch:FireServer(Value and true or Functions.IsCrouching())
+		RemotesFolder.Crouch:FireServer(Value and true or Functions.IsCrouching(), true)
 	end
 end)
 
@@ -2949,7 +2949,7 @@ Functions.HandleCharacter = function(NewCharacter)
 
 		if not MainHook then
 			if (Toggles.CrouchSpoof.Value or Toggles.PositionSpoof.Value) and RemotesFolder:FindFirstChild("Crouch") then
-				RemotesFolder.Crouch:FireServer(true)
+				RemotesFolder.Crouch:FireServer(true, true)
 			end
 		end
 
@@ -3127,7 +3127,7 @@ Functions.HandleCharacter = function(NewCharacter)
 	if Toggles.PositionSpoof.Value and Floor ~= "Fools" and Floor ~= "OldHotel" then
 		RootPart.CFrame = RootPart.CFrame * CFrame.new(0, -2.346, 0)
 		Humanoid.HipHeight = 0.05
-		RemotesFolder.Crouch:FireServer(true)
+		RemotesFolder.Crouch:FireServer(true, true)
 	end
 
 	local Jam = Globals.MainUI.Initiator.Main_Game.Health:FindFirstChild("Jam")
