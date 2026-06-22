@@ -88,7 +88,7 @@ return function(Window)
 	MenuGroup:AddLabel("Menu bind"):AddKeyPicker("MenuKeybind", { Default = "RightShift", NoUI = true, Text = "Menu keybind" })
 	
 	MenuGroup:AddButton("Copy Discord Invite", function()
-		toclipboard("https://discord.gg/5jwbZcqjVF")
+		toclipboard("https://dsc.gg/abysallhub")
 		Library:Notify("Discord invite copied.")
 	end)
 	
