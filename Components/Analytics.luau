@@ -3,7 +3,7 @@
     For anyone wondering, this just sends a discord message when someone executed the script.
     We only log basic data such as roblox username, executor used and the game you are in.
     Sensetive data such as IP adresses or HWIDs are NOT logged and never will be.
-    If you want proof of this, feel free to dm me on discord: @bocaj111004.
+    If you want proof of this, feel free to dm me on discord: bocaj111004#0.
 
 ]]--
 
