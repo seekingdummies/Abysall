@@ -2611,7 +2611,7 @@ Functions.HandleCharacter = function(NewCharacter)
 		local OriginalGetMoveVector = Controls.GetMoveVector
 		Controls.GetMoveVector = function(...)
 			if Toggles.AutoSteerMinecart.Value and Floor == "Mines" then
-				local Node = Functions.GetNearestTurnNode()
+				local Node = Globals.NearestTurnNode
 				if Node and Functions.GetMinecart() then
 					local Turn = Node:GetAttribute("Turn")
 					return Turn == "Left" and Vector3.new(-1, 0, 0) or Turn == "Right" and Vector3.new(1, 0, 0) or Vector3.zero
@@ -2622,8 +2622,14 @@ Functions.HandleCharacter = function(NewCharacter)
 	end
 
 	Globals.AutoMinecartDucked = false
+	Globals.LastDuck = tick()
 	Connections.AutoSteerMinecartDuckHandler = Services.RunService.Heartbeat:Connect(function()
-		if not Toggles.AutoSteerMinecart.Value or not Functions.GetMinecart() then return end
+		if not Toggles.AutoSteerMinecart.Value or not Functions.GetMinecart() or tick() - Globals.LastDuck < 0.1 then return end
+		local Node = Functions.GetNearestTurnNode()
+		if Node then
+			Globals.NearestTurnNode = Node
+		end
+
 		if not Globals.AutoMinecartDucked and Functions.GetNearestDuckBoard() then
 			Main_Game.crouch(true)
 			Globals.AutoMinecartDucked = true
@@ -2636,6 +2642,7 @@ Functions.HandleCharacter = function(NewCharacter)
 		else
 			Camera.FieldOfView = Options.FieldOfView.Value
 		end
+		Globals.LastDuck = tick()
 	end)
 
 	Globals.AnticheatDisabled = false
@@ -2838,7 +2845,7 @@ Functions.HandleCharacter = function(NewCharacter)
 	Globals.SpoofOffset = 0
 	Globals.LastAutoHide = tick()
 	Connections.AutoHideConnection = Services.RunService.Heartbeat:Connect(function()
-		if not Toggles.AutoClosetToggle.Value or tick() - Globals.LastAutoHide <= 0.05 then
+		if not Toggles.AutoClosetToggle.Value or tick() - Globals.LastAutoHide <= 0.1 then
 			Globals.AutoClosetActive = false
 			return
 		end
@@ -3357,7 +3364,7 @@ Functions.HandleObject = function(Object)
 		local DoorConn = Services.RunService.Heartbeat:Connect(function()
 			if Object:FindFirstChild("Door") and Object:FindFirstChild("ClientOpen") then
 				if LocalPlayer:DistanceFromCharacter(Object.Door.Position) < 75
-					and tick() - LastDoorFire > 0.075
+					and tick() - LastDoorFire > 0.1
 					and Toggles.DoorReachToggle.Value
 				then
 					Object.ClientOpen:FireServer()
