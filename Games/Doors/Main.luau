@@ -2905,6 +2905,7 @@ Functions.HandleCharacter = function(NewCharacter)
 	table.insert(Globals.ThirdPersonParts, Character:WaitForChild("Head"))
 
 	Globals.LastAnimationCheck = tick()
+	Globals.LastCrouchFire = tick()
 	Globals.OriginalC1 = Character.LowerTorso.Root.C1
 
 	local RayParams = RaycastParams.new()
@@ -3041,10 +3042,11 @@ Functions.HandleCharacter = function(NewCharacter)
 			end
 		end
 
-		if RemotesFolder:FindFirstChild("Crouch") and not Functions.CheckCompatability({"hookmetamethod", "newcclosure", "getnamecallmethod"}) then
+		if RemotesFolder:FindFirstChild("Crouch") and tick() - Globals.LastCrouchFire < 0.1 then
 			local IsCrouch = Functions.IsCrouching()
 			if Toggles.CrouchSpoof.Value or Toggles.PositionSpoof.Value then IsCrouch = true end
 			RemotesFolder.Crouch:FireServer(IsCrouch, true)
+			Globals.LastCrouchFire = tick()
 		end
 
 		if tick() - Globals.LastAnimationCheck > 0.1 then
