@@ -3042,7 +3042,7 @@ Functions.HandleCharacter = function(NewCharacter)
 			end
 		end
 
-		if RemotesFolder:FindFirstChild("Crouch") and tick() - Globals.LastCrouchFire < 0.1 then
+		if RemotesFolder:FindFirstChild("Crouch") and tick() - Globals.LastCrouchFire > 0.1 then
 			local IsCrouch = Functions.IsCrouching()
 			if Toggles.CrouchSpoof.Value or Toggles.PositionSpoof.Value then IsCrouch = true end
 			RemotesFolder.Crouch:FireServer(IsCrouch, true)
