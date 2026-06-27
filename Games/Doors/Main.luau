@@ -2609,6 +2609,7 @@ Functions.HandleCharacter = function(NewCharacter)
 	if Main_Game and Functions.CheckCompatability({"require"}) then
 		local Controls = require(LocalPlayer.PlayerScripts.PlayerModule):GetControls()
 		local OriginalGetMoveVector = Controls.GetMoveVector
+		Globals.OriginalGetMoveVector = OriginalGetMoveVector
 		Controls.GetMoveVector = function(...)
 			if Toggles.AutoSteerMinecart.Value and Floor == "Mines" then
 				local Node = Globals.NearestTurnNode
@@ -4123,15 +4124,15 @@ Functions.TriggerPrompt = function(Prompt)
 	if Prompt.Parent.Name == "Battery" then
 		local Tool = Character:FindFirstChildOfClass("Tool")
 		local BPack = Functions.HasItem("BatteryPack")
-		if BPack and BPack:GetAttribute("Durability") >= BPack:GetAttribute("DurabilityMax") then return end
-		if not Tool then return end
-		if Tool:GetAttribute("LightSource") then
+		if not Tool and not BPack then return end
+		if Tool and Tool:GetAttribute("LightSource") then
 			if Tool:GetAttribute("Durability") and Tool:GetAttribute("DurabilityMax")
 				and Tool:GetAttribute("Durability") > Tool:GetAttribute("DurabilityMax")
 			then return end
-		else
+		elseif not BPack then
 			return
 		end
+		if BPack and BPack:GetAttribute("Durability") >= BPack:GetAttribute("DurabilityMax") then return end
 	end
 
 	if Prompt.Name == "HerbPrompt" then
@@ -4491,6 +4492,11 @@ Library:OnUnload(function()
 		Main_Game.fovtarget   = 70
 		Main_Game.spring.Speed = 8
 		Main_Game.tooloffset   = Vector3.zero
+	end
+
+	if Globals.OriginalGetMoveVector then 
+		local Controls = require(LocalPlayer.PlayerScripts.PlayerModule):GetControls()
+		Controls.GetMoveVector = Globals.OriginalGetMoveVector
 	end
 
 	getgenv().Abysall = nil
