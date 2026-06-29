@@ -1026,7 +1026,7 @@ local Tabs = {
 
 Groupboxes.General_Character = Tabs.General:AddLeftGroupbox("Character")
 Groupboxes.General_Character:AddSlider("SpeedBoostSlider", {
-	Text = "Speed Boost", Min = 0, Max = 85, Default = 0, Rounding = 0, Compact = true
+	Text = "Speed Boost", Min = 0, Max = 100, Default = 0, Rounding = 0, Compact = true
 })
 Groupboxes.General_Character:AddToggle("SpeedBoostToggle", {
 	Text = "Enable Speed Boost", Default = false, Tooltip = "Increases your walkspeed by the specified amount."
@@ -1038,7 +1038,7 @@ Toggles.FlyToggle:AddKeyPicker("FlyKeybind", {
 	Text = "Fly", Default = "F", Mode = "Toggle", SyncToggleState = true
 })
 Groupboxes.General_Character:AddSlider("FlySpeed", {
-	Text = "Fly Speed", Min = 0, Max = 100, Default = 20, Rounding = 0, Compact = true
+	Text = "Fly Speed", Min = 0, Max = 115, Default = 20, Rounding = 0, Compact = true
 })
 Groupboxes.General_Character:AddDivider()
 Groupboxes.General_Character:AddToggle("NoclipToggle", {
@@ -2537,7 +2537,7 @@ Modules = {
 
 local CharacterOldConnectionKeys = {
 	"MainHandler", "JumpHandler", "SlideHandler", "LibraryCodeHandler1", "LibraryCodeHandler2",
-	"OxygenConnection", "AnimationHandler", "AutoHideConnection", "LagbackFixer", "AutoReviveHandler",
+	"OxygenConnection", "AnimationHandler", "AutoHideConnection", "AutoReviveHandler",
 	"SHMFixer", "AnticheatDisabler", "AnticheatEnableDetector1", "AnticheatEnableDetector2",
 	"AutoSteerMinecartDuckHandler", "AutoSolveAnchorsConnection", "InfiniteJumpsConnection1", "InfiniteJumpsConnection2",
 	"FootstepHandler"
@@ -2867,15 +2867,6 @@ Functions.HandleCharacter = function(NewCharacter)
 			Globals.SpectateEntity = nil
 		end
 		Globals.LastAutoHide = tick()
-	end)
-
-	Connections.LagbackFixer = CollisionPart:GetPropertyChangedSignal("Anchored"):Connect(function()
-		if CollisionPartClone and CollisionPart.Anchored and not Character:GetAttribute("Hiding") then
-			Globals.Lagging = true
-			CollisionPartClone.Massless = true
-			task.wait(1)
-			Globals.Lagging = false
-		end
 	end)
 
 	Globals.LastAutoAnchor = tick()
@@ -3366,7 +3357,7 @@ Functions.HandleObject = function(Object)
 			if Object:FindFirstChild("Door") and Object:FindFirstChild("ClientOpen") then
 				if LocalPlayer:DistanceFromCharacter(Object.Door.Position) < 75
 					and tick() - LastDoorFire > 0.1
-					and Toggles.DoorReachToggle.Value
+					and (Toggles.DoorReachToggle.Value or Functions.GetMinecart())
 				then
 					Object.ClientOpen:FireServer()
 					LastDoorFire = tick()
