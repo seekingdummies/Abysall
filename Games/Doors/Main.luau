@@ -3007,7 +3007,7 @@ Functions.HandleCharacter = function(NewCharacter)
 
 		if Toggles.VelocityManipulationToggle.Value and Options.VelocityManipulationMode.Value == "Velocity" then
 			Globals.ManipulateBody.Parent = RootPart
-			Globals.ManipulateBody.Velocity = RootPart.CFrame.LookVector * 2.25
+			Globals.ManipulateBody.Velocity = RootPart.CFrame.LookVector * 5
 		else
 			Globals.ManipulateBody.Parent = nil
 		end
